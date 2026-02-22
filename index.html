@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MasterClass Uptime Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { navy: '#0F172A', slate: '#1E293B', cyan: '#06B6D4', emerald: '#10B981', crimson: '#EF4444' },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['Fira Code', 'monospace'] }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #0F172A; color: #F8FAFC; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .pulse-green { box-shadow: 0 0 10px #10B981; animation: pulseG 2s infinite; }
+        .pulse-red { box-shadow: 0 0 10px #EF4444; animation: pulseR 2s infinite; }
+        @keyframes pulseG { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+        @keyframes pulseR { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col">
+
+    <nav class="glass sticky top-0 z-50 px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-2 cursor-pointer" onclick="app.goHome()">
+            <i class="ph-fill ph-activity text-cyan text-3xl"></i>
+            <h1 class="text-xl font-bold tracking-wide">Wakil<span class="text-cyan text-opacity-80">Monitor</span></h1>
+        </div>
+        <div class="flex items-center gap-4 text-sm font-mono text-gray-400">
+            <span id="live-clock">00:00:00</span>
+            <div class="h-2 w-2 rounded-full bg-emerald pulse-green" id="global-status-dot"></div>
+        </div>
+    </nav>
+
+    <main class="flex-grow p-6 max-w-7xl mx-auto w-full relative" id="app-container">
+        <div id="view-dashboard" class="block transition-opacity duration-300">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <div class="glass rounded-xl p-6 hover:-translate-y-1 transition-transform border-t-2 border-t-cyan">
+                    <p class="text-gray-400 text-sm mb-1 uppercase tracking-wider">Total Monitors</p>
+                    <h2 class="text-4xl font-bold font-mono" id="stat-total">-</h2>
+                </div>
+                <div class="glass rounded-xl p-6 hover:-translate-y-1 transition-transform border-t-2 border-t-emerald">
+                    <p class="text-gray-400 text-sm mb-1 uppercase tracking-wider">Global Uptime</p>
+                    <h2 class="text-4xl font-bold font-mono text-emerald" id="stat-uptime">-%</h2>
+                </div>
+                <div class="glass rounded-xl p-6 hover:-translate-y-1 transition-transform border-t-2 border-t-crimson">
+                    <p class="text-gray-400 text-sm mb-1 uppercase tracking-wider">Current Incidents</p>
+                    <h2 class="text-4xl font-bold font-mono text-crimson" id="stat-down">-</h2>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold">Active Services</h3>
+                <span class="text-xs text-gray-500 font-mono" id="last-updated-text">Updating...</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="monitors-grid">
+                </div>
+        </div>
+
+        <div id="view-detail" class="hidden transition-opacity duration-300">
+            <button onclick="app.goHome()" class="mb-6 text-gray-400 hover:text-cyan flex items-center gap-2 transition-colors">
+                <i class="ph ph-arrow-left"></i> Back to Dashboard
+            </button>
+            
+            <div class="glass rounded-xl p-8 mb-8 relative overflow-hidden">
+                <div class="flex justify-between items-start mb-8">
+                    <div>
+                        <h2 class="text-3xl font-bold mb-2" id="detail-name">Loading...</h2>
+                        <a href="#" target="_blank" id="detail-url" class="text-cyan hover:underline font-mono text-sm">link</a>
+                    </div>
+                    <div id="detail-status-badge" class="px-4 py-2 rounded-full font-bold text-sm tracking-wide">
+                        STATUS
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 border-y border-gray-700 py-6">
+                    <div>
+                        <p class="text-gray-400 text-xs uppercase mb-1">Average Response</p>
+                        <p class="text-xl font-mono font-semibold" id="detail-avg-ping">-- ms</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-400 text-xs uppercase mb-1">Recorded Uptime</p>
+                        <p class="text-xl font-mono font-semibold" id="detail-uptime">--%</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-400 text-xs uppercase mb-1">Last Checked</p>
+                        <p class="text-xl font-mono font-semibold" id="detail-last-check">--</p>
+                    </div>
+                </div>
+
+                <h3 class="text-lg font-semibold mb-4">Response Time History (Local)</h3>
+                <div class="w-full h-64 bg-slate bg-opacity-30 rounded-lg p-4">
+                    <canvas id="pingChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
