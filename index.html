@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MasterClass Uptime Dashboard</title>
+    <title>MasterClass C2 Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -23,15 +23,17 @@
         .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .pulse-green { box-shadow: 0 0 10px #10B981; animation: pulseG 2s infinite; }
         .pulse-red { box-shadow: 0 0 10px #EF4444; animation: pulseR 2s infinite; }
+        .pulse-yellow { box-shadow: 0 0 10px #FBBF24; animation: pulseY 2s infinite; }
         @keyframes pulseG { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
         @keyframes pulseR { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        @keyframes pulseY { 0% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(251, 191, 36, 0); } 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); } }
     </style>
 </head>
 <body class="antialiased min-h-screen flex flex-col">
 
     <nav class="glass sticky top-0 z-50 px-6 py-4 flex justify-between items-center">
         <div class="flex items-center gap-2 cursor-pointer" onclick="app.goHome()">
-            <i class="ph-fill ph-activity text-cyan text-3xl"></i>
+            <i class="ph-fill ph-cpu text-cyan text-3xl"></i>
             <h1 class="text-xl font-bold tracking-wide">Wakil<span class="text-cyan text-opacity-80">Monitor</span></h1>
         </div>
         <div class="flex items-center gap-4 text-sm font-mono text-gray-400">
@@ -41,26 +43,28 @@
     </nav>
 
     <main class="flex-grow p-6 max-w-7xl mx-auto w-full relative" id="app-container">
+        
         <div id="view-dashboard" class="block transition-opacity duration-300">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                 <div class="glass rounded-xl p-6 hover:-translate-y-1 transition-transform border-t-2 border-t-cyan">
-                    <p class="text-gray-400 text-sm mb-1 uppercase tracking-wider">Total Monitors</p>
+                    <p class="text-gray-400 text-sm mb-1 uppercase tracking-wider">Active Bots</p>
                     <h2 class="text-4xl font-bold font-mono" id="stat-total">-</h2>
                 </div>
                 <div class="glass rounded-xl p-6 hover:-translate-y-1 transition-transform border-t-2 border-t-emerald">
-                    <p class="text-gray-400 text-sm mb-1 uppercase tracking-wider">Global Uptime</p>
-                    <h2 class="text-4xl font-bold font-mono text-emerald" id="stat-uptime">-%</h2>
+                    <p class="text-gray-400 text-sm mb-1 uppercase tracking-wider">Avg Response</p>
+                    <h2 class="text-4xl font-bold font-mono text-emerald" id="stat-ping">-- ms</h2>
                 </div>
                 <div class="glass rounded-xl p-6 hover:-translate-y-1 transition-transform border-t-2 border-t-crimson">
-                    <p class="text-gray-400 text-sm mb-1 uppercase tracking-wider">Current Incidents</p>
+                    <p class="text-gray-400 text-sm mb-1 uppercase tracking-wider">Incidents</p>
                     <h2 class="text-4xl font-bold font-mono text-crimson" id="stat-down">-</h2>
                 </div>
             </div>
 
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-semibold">Active Services</h3>
+                <h3 class="text-xl font-semibold">Live Bot Control Panel</h3>
                 <span class="text-xs text-gray-500 font-mono" id="last-updated-text">Updating...</span>
             </div>
+            
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="monitors-grid">
                 </div>
         </div>
@@ -73,8 +77,11 @@
             <div class="glass rounded-xl p-8 mb-8 relative overflow-hidden">
                 <div class="flex justify-between items-start mb-8">
                     <div>
-                        <h2 class="text-3xl font-bold mb-2" id="detail-name">Loading...</h2>
-                        <a href="#" target="_blank" id="detail-url" class="text-cyan hover:underline font-mono text-sm">link</a>
+                        <h2 class="text-3xl font-bold mb-2 flex items-center gap-3" id="detail-name">
+                            <img src="" id="detail-logo" class="w-8 h-8 hidden">
+                            <span id="detail-title">Loading...</span>
+                        </h2>
+                        <span class="text-gray-400 font-mono text-sm" id="detail-level">Level: --</span>
                     </div>
                     <div id="detail-status-badge" class="px-4 py-2 rounded-full font-bold text-sm tracking-wide">
                         STATUS
@@ -83,20 +90,24 @@
 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 border-y border-gray-700 py-6">
                     <div>
-                        <p class="text-gray-400 text-xs uppercase mb-1">Average Response</p>
-                        <p class="text-xl font-mono font-semibold" id="detail-avg-ping">-- ms</p>
+                        <p class="text-gray-400 text-xs uppercase mb-1">Live Balance</p>
+                        <p class="text-xl font-mono font-semibold text-yellow-500" id="detail-balance">--</p>
                     </div>
                     <div>
-                        <p class="text-gray-400 text-xs uppercase mb-1">Recorded Uptime</p>
-                        <p class="text-xl font-mono font-semibold" id="detail-uptime">--%</p>
+                        <p class="text-gray-400 text-xs uppercase mb-1">Next Claim</p>
+                        <p class="text-xl font-mono font-semibold text-cyan" id="detail-timer">--:--</p>
                     </div>
                     <div>
-                        <p class="text-gray-400 text-xs uppercase mb-1">Last Checked</p>
+                        <p class="text-gray-400 text-xs uppercase mb-1">Last Sync</p>
                         <p class="text-xl font-mono font-semibold" id="detail-last-check">--</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-400 text-xs uppercase mb-1">Avg Ping</p>
+                        <p class="text-xl font-mono font-semibold text-emerald" id="detail-avg-ping">-- ms</p>
                     </div>
                 </div>
 
-                <h3 class="text-lg font-semibold mb-4">Response Time History (Local)</h3>
+                <h3 class="text-lg font-semibold mb-4">Server Response History (Last 30 Pings)</h3>
                 <div class="w-full h-64 bg-slate bg-opacity-30 rounded-lg p-4">
                     <canvas id="pingChart"></canvas>
                 </div>
