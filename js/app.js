@@ -7,7 +7,7 @@
 
 const CONFIG = {
     // 🎯 INSERT YOUR API URLS HERE:
-    GAS_API_URL: "https://script.google.com/macros/s/YOUR_GAS_ID/exec?key=WAKIL_MASTER_KEY_2026", 
+    GAS_API_URL: "https://script.google.com/macros/s/AKfycbzDxsUv-J4Jw-j7TwtFIxxMdd7LjArDyX2NhkhW-3VbPYRv7OqhY0OxHJvCC7UxZcEBcg/exec?key=WAKIL_MASTER_KEY_2026", 
     RENDER_API_URL: "https://bnb-faucet-bot.onrender.com/api/status",
     FRONTEND_SECRET_KEY: "WAKIL_MASTER_KEY_2026"
 };
